@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glass Aluminum Estimator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        
+        body {
+            font-family: 'Press Start 2P', cursive;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #5a8fee;
+            color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+            font-size: 10px;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            margin: auto;
+            background: #e0e0e0; 
+            padding: 25px;
+            border: 4px solid #000;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
+            box-sizing: border-box;
+            image-rendering: pixelated;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            background-color: #000;
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 1.6em;
+            font-weight: 700;
+            border: 4px solid #fff;
+            box-shadow: 6px 6px 0px #000;
+        }
+        h2 {
+            color: #c00000;
+            margin-top: 20px;
+            font-size: 1.1em;
+            padding-bottom: 8px;
+        }
+
+        .info-text {
+            font-size: 8px;
+            color: #444;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #cameraContainer, #detectedImage {
+            border: 4px solid #000;
+            width: 100%;
+            max-width: 640px;
+            height: 300px;
+            margin: 15px auto;
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        #detectedImage p {
+            color: #fff;
+            font-style: italic;
+        }
+
+        .crt-effect {
+            position: relative;
+        }
+        .crt-effect::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.05));
+            z-index: 2;
+            background-size: 100% 3px, 3px 100%;
+            pointer-events: none;
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.9; }
+            50% { opacity: 1; }
+            100% { opacity: 0.9; }
+        }
+
+        .camera-controls {
+            display: flex;
+            flex-direction: column; 
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .camera-controls input[type="file"] {
+            display: block; 
+            margin-top: 10px;
+            border: 4px solid #000;
+            border-radius: 0;
+            padding: 4px;
+            background-color: #fff;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+        }
+        .camera-controls input[type="file"]::-webkit-file-upload-button {
+            visibility: hidden;
+            width: 0;
+            padding: 0;
+            margin: 0;
+        }
+        .camera-controls input[type="file"]::before {
+            content: 'UPLOAD FROM GALLERY';
+            display: inline-block;
+            background: #fff;
+            color: #000;
+            border: none;
+            border-radius: 0;
+            padding: 10px 15px;
+            outline: none;
+            white-space: nowrap;
+            -webkit-user-select: none;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+            transition: background 0.3s ease;
+            width: 100%; 
+            box-sizing: border-box;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 9px;
+        }
+        .camera-controls input[type="file"]:hover::before {
+            background: #e0e0e0;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 15px;
+            margin-top: 0; 
+            border: 4px solid #000;
+            border-radius: 0;
+            cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 9px;
+            transition: all 0.3s ease;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+        }
+        button:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+        }
+        button#openCameraButton {
+            background-color: #6c757d;
+            color: white;
+        }
+        button#openCameraButton:hover {
+            background-color: #5a6268;
+        }
+        button#captureButton {
+            background-color: #28a745; 
+            color: white;
+        }
+        button#captureButton:hover {
+            background-color: #218838;
+        }
+        button#printReceiptBtn {
+            background-color: #333;
+            color: #fff;
+        }
+        button#printReceiptBtn:hover {
+            background-color: #444;
+        }
+        button#clearAllButton {
+            background-color: #aa0000; 
+            color: white;
+        }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: 1fr; 
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        @media (min-width: 600px) {
+            .grid-inputs {
+                grid-template-columns: 1fr 1fr; 
+            }
+        }
+        .dimension-item {
+            margin-bottom: 0; 
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 9px;
+            color: #000;
+        }
+        select, input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 4px solid #000;
+            border-radius: 0;
+            box-sizing: border-box;
+            font-size: 9px;
+            font-family: 'Press Start 2P', cursive;
+            background-color: #fff;
+        }
+        input[readonly] {
+            background-color: #bbb;
+            cursor: not-allowed;
+        }
+
+        .card-section {
+            background-color: #c0c0c0;
+            border: 4px solid #fff;
+            border-bottom: 4px solid #808080;
+            border-right: 4px solid #808080;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        .card-section h2 {
+            margin-top: 0;
+            padding-top: 0;
+            border-bottom: none;
+            color: #333;
+        }
+
+        #totalPrice {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffff00;
+            background-color: #000;
+            margin-top: 30px;
+            text-align: center;
+            border: 4px solid #ffff00;
+            padding: 20px;
+        }
+        #totalPrice::before {
+            content: '[ TOTAL PRICE ]';
+            font-size: 8px;
+            display: block;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        #totalPrice span {
+            display: block;
+        }
+
+        .inch-display {
+            font-size: 8px;
+            color: #c00000;
+            margin-top: 5px;
+        }
+
+        @keyframes glitch {
+            0% { transform: translate(0); text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff; }
+            20% { transform: translate(-3px, 2px); }
+            40% { transform: translate(-3px, -2px); text-shadow: -2px 0 #ff00ff, 2px 0 #00ffff; }
+            60% { transform: translate(3px, 2px); }
+            80% { transform: translate(3px, -2px); text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff; }
+            100% { transform: translate(0); text-shadow: none; }
+        }
+
+        .glitch-active {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both;
+        }
+
+        #loadingOverlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #00ff00;
+            text-align: center;
+        }
+        .loading-bar-container {
+            width: 60%;
+            height: 20px;
+            border: 4px solid #fff;
+            margin-top: 15px;
+            padding: 2px;
+        }
+        .loading-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: #00ff00;
+            animation: progressFill 1.5s linear forwards;
+        }
+        @keyframes progressFill {
+            to { width: 100%; }
+        }
+
+        #totalPrice {
+            overflow: hidden;
+        }
+
+        #receiptSection {
+            display: none;
+        }
+        @media print {
+            body { background: white !important; padding: 0 !important; margin: 0 !important; }
+            .container { border: none !important; box-shadow: none !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+            .card-section, h1, .info-text, .camera-controls { display: none !important; }
+            #receiptSection {
+                display: block !important;
+                width: 250px;
+                margin: 40px auto;
+                padding: 20px;
+                border: 4px solid #000;
+                background: white;
+                color: black;
+                font-family: 'Press Start 2P', cursive;
+                text-transform: uppercase;
+                line-height: 2;
+                box-sizing: border-box;
+            }
+            .receipt-header { text-align: center; border-bottom: 4px dashed #000; padding-bottom: 10px; margin-bottom: 15px; font-size: 10px; }
+            .receipt-row { display: flex; justify-content: space-between; font-size: 7px; margin-bottom: 5px; }
+            .receipt-divider { border-top: 4px dashed #000; margin: 10px 0; }
+            .receipt-footer { text-align: center; margin-top: 20px; font-size: 6px; }
+            .receipt-total { font-size: 9px; margin-top: 10px; text-align: right; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Glass Aluminum Estimator</h1>
+        <p class="info-text">I-upload ang picture o ilagay ang sukat para makuha ang estimate.</p>
+
+        <div class="card-section">
+            <h2>1. Camera / Image Upload</h2>
+            <div id="cameraContainer" class="crt-effect">
+                <video id="webcam" autoplay playsinline title="Live Camera Feed"></video>
+            </div>
+            <div class="camera-controls">
+                <button id="openCameraButton">Buksan ang Camera</button>
+                <button id="captureButton" style="display:none;">Capture & Scan Glass</button>
+                <input type="file" accept="image/*" id="imageUpload">
+            </div>
+        </div>
+
+        <div class="card-section">
+            <h2>Preview Area</h2>
+            <div id="detectedImage" class="crt-effect">
+                <p>Captured image will appear here</p>
+            </div>
+            <div id="loadingOverlay">
+                <div style="font-size: 12px; margin-bottom: 5px;">AI SCANNING...</div>
+                <div class="loading-bar-container"><div class="loading-bar-fill"></div></div>
+            </div>
+        </div>
+
+        <div class="card-section">
+            <h2>Price Settings (Per Sq Ft)</h2>
+            <div class="grid-inputs">
+                <div>
+                    <label>Series 900 (Sliding):</label>
+                    <input type="number" id="priceS900" value="4000">
+                </div>
+                <div>
+                    <label>Series 798 (Premium):</label>
+                    <input type="number" id="priceS798" value="2900">
+                </div>
+                <div>
+                    <label>Series 38 (Casement):</label>
+                    <input type="number" id="priceS38" value="4900">
+                </div>
+                <div>
+                    <label>Awning Price:</label>
+                    <input type="number" id="priceAwning" value="180">
+                </div>
+                <div>
+                    <label>Clear Glass:</label>
+                    <input type="number" id="priceClear" value="50">
+                </div>
+                <div>
+                    <label>Bronze Glass:</label>
+                    <input type="number" id="priceBronze" value="75">
+                </div>
+                <div>
+                    <label>Frosted Glass:</label>
+                    <input type="number" id="priceFrosted" value="85">
+                </div>
+                <div>
+                    <label>Tempered Glass:</label>
+                    <input type="number" id="priceTempered" value="150">
+                </div>
+                <div>
+                    <label>White Color Add-on:</label>
+                    <input type="number" id="priceColorWhite" value="0">
+                </div>
+                <div>
+                    <label>Black Color Add-on:</label>
+                    <input type="number" id="priceColorBlack" value="50">
+                </div>
+                <div>
+                    <label>Brown Color Add-on:</label>
+                    <input type="number" id="priceColorBrown" value="70">
+                </div>
+                <div>
+                    <label>Wood Finish Add-on:</label>
+                    <input type="number" id="priceColorWood" value="100">
+                </div>
+            </div>
+        </div>
+
+        <div id="results">
+            <div class="card-section">
+                <h2>2. Mga Sukat (Dimensions)</h2>
+                <div class="grid-inputs">
+                    <div class="dimension-item">
+                        <label for="inputWidth">Lapad (Width in cm):</label>
+                        <input type="number" id="inputWidth" placeholder="100">
+                        <div id="widthInches" class="inch-display">0.00 in</div>
+                    </div>
+                    <div class="dimension-item">
+                        <label for="inputHeight">Taas (Height in cm):</label>
+                        <input type="number" id="inputHeight" placeholder="100">
+                        <div id="heightInches" class="inch-display">0.00 in</div>
+                    </div>
+                </div>
+                <div class="dimension-item">
+                    <label>Square Footage:</label>
+                    <input type="text" id="detectedSquareFoot" readonly value="0.00 sq ft">
+                </div>
+            </div>
+
+            <div class="card-section">
+                <h2>3. Configuration</h2>
+                <div class="grid-inputs">
+                    <div>
+                        <label for="seriesSelect">Aluminum Series:</label>
+                        <select id="seriesSelect">
+                            <option value="">Pumili ng Series</option>
+                            <option value="series900">Series 900 (Sliding)</option>
+                            <option value="series798">Series 798 (Premium)</option>
+                            <option value="series38">Series 38 (Casement)</option>
+                            <option value="awning">Awning</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="glassSelect">Glass Type:</label>
+                        <select id="glassSelect">
+                            <option value="clear">Clear (Standard)</option>
+                            <option value="bronze">Bronze / Tinted</option>
+                            <option value="frosted">Frosted</option>
+                            <option value="tempered">Tempered Clear</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="aluminumColorSelect">Aluminum Color:</label>
+                        <select id="aluminumColorSelect">
+                            <option value="default">Default (No Add-on)</option>
+                            <option value="white">White</option>
+                            <option value="black">Black</option>
+                            <option value="brown">Brown</option>
+                            <option value="wood">Wood Finish</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="discountInput">Discount (%):</label>
+                        <input type="number" id="discountInput" value="0" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-section">
+                <h2>4. Kabuuang Presyo</h2>
+                <div id="totalPrice">
+                    <span>Php 0.00</span>
+                </div>
+                <button id="clearAllButton" style="margin-top: 10px;">Clear All</button>
+                <button id="printReceiptBtn" style="margin-top: 20px;">Generate Receipt</button>
+                <p class="info-text" style="text-align:center; margin-top:15px;">*Kasama na ang estimated labor fee.</p>
+            </div>
+            
+            <div id="receiptSection">
+                <div class="invoice-header">
+                    <h2>RETRO GLASS CO.</h2>
+                    <p>YOUR PIXELATED GLASS SOLUTIONS</p>
+                    <p>Date: <span id="rcpt-date"></span></p>
+                </div>
+                <div class="invoice-title">INVOICE / ESTIMATE</div>
+                
+                <div class="invoice-details">
+                    <div class="detail-row"><span>Description</span><span>Amount</span></div>
+                    <div class="invoice-divider"></div>
+                    <div class="detail-row"><span>Glass Aluminum (<span id="rcpt-width">--</span>x<span id="rcpt-height">--</span> CM)</span><span></span></div>
+                    <div class="detail-row"><span>Series: <span id="rcpt-series">--</span></span><span></span></div>
+                    <div class="detail-row"><span>Glass Type: <span id="rcpt-glass">--</span></span><span></span></div>
+                    <div class="detail-row"><span>Color: <span id="rcpt-color">--</span></span><span></span></div>
+                    <div class="invoice-divider"></div>
+                    <div class="detail-row"><span>Subtotal:</span><span id="rcpt-subtotal">PHP 0.00</span></div>
+                    <div class="detail-row"><span>Discount (<span id="rcpt-discount-percent">0%</span>):</span><span id="rcpt-discount-amount">PHP 0.00</span></div>
+                    <div class="invoice-divider"></div>
+                    <div class="detail-row total-row"><span>TOTAL AMOUNT DUE:</span><span id="rcpt-total">PHP 0.00</span></div>
+                </div>
+
+                <div class="invoice-footer">
+                    <p>THANK YOU FOR YOUR BUSINESS!</p>
+                    <p>*** THIS IS AN ESTIMATE ONLY ***</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('webcam');
+        const captureBtn = document.getElementById('captureButton');
+        const openCamBtn = document.getElementById('openCameraButton');
+        const printReceiptBtn = document.getElementById('printReceiptBtn');
+        const clearAllBtn = document.getElementById('clearAllButton');
+
+        let audioCtx;
+        function playRetroSound(type) {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'square'; 
+                osc.frequency.setValueAtTime(600, now);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'scan') {
+                osc.type = 'sawtooth'; 
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.4);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+        }
+
+        openCamBtn.addEventListener('click', async () => {
+            playRetroSound('click');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+                captureBtn.style.display = 'block';
+                openCamBtn.style.display = 'none';
+                video.style.display = 'block'; 
+                document.getElementById('detectedImage').innerHTML = '<p>Captured image will appear here</p>'; 
+            } catch (err) {
+                playRetroSound('click'); 
+                alert("Hindi mabuksan ang camera: " + err.message);
+            }
+        });
+
+        captureBtn.addEventListener('click', () => {
+            playRetroSound('click');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imgUrl = canvas.toDataURL('image/png');
+            displayCapturedImage(imgUrl);
+            
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                video.style.display = 'none'; 
+                captureBtn.style.display = 'none';
+                openCamBtn.style.display = 'block';
+            }
+            
+            const simW = Math.round(video.videoWidth / 10) || 100;
+            const simH = Math.round(video.videoHeight / 10) || 100;
+            simulateDetection(simW, simH);
+        });
+
+        document.getElementById('imageUpload').addEventListener('change', (event) => {
+            playRetroSound('click');
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        displayCapturedImage(e.target.result);
+                        
+                        if (video.srcObject) {
+                            video.srcObject.getTracks().forEach(track => track.stop());
+                            video.srcObject = null;
+                            video.style.display = 'none';
+                            captureBtn.style.display = 'none';
+                            openCamBtn.style.display = 'block';
+                        }
+                        
+                        const simW = Math.round(img.naturalWidth / 10) || 100;
+                        const simH = Math.round(img.naturalHeight / 10) || 100;
+                        simulateDetection(simW, simH);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function displayCapturedImage(src) {
+            const img = document.createElement('img');
+            img.src = src;
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+            img.style.objectFit = 'contain'; 
+            const container = document.getElementById('detectedImage');
+            container.innerHTML = '';
+            container.appendChild(img);
+        }
+
+        function simulateDetection(w, h) {
+            const loader = document.getElementById('loadingOverlay');
+            loader.style.display = 'flex';
+            
+            const processingSound = setInterval(() => playRetroSound('click'), 200);
+
+            setTimeout(() => {
+                clearInterval(processingSound);
+                loader.style.display = 'none';
+                
+                playRetroSound('scan');
+                
+                const bar = loader.querySelector('.loading-bar-fill');
+                bar.style.animation = 'none';
+                void bar.offsetWidth; 
+                bar.style.animation = null;
+
+                alert(`AI Search Complete!\nDetected: ${w}cm x ${h}cm`);
+                document.getElementById('inputWidth').value = w;
+                document.getElementById('inputHeight').value = h;
+                updateSqFt();
+                calculatePrice();
+                savePriceSettings(); 
+            }, 1500);
+        }
+
+        document.getElementById('inputWidth').addEventListener('input', () => { updateSqFt(); calculatePrice(); });
+        document.getElementById('inputHeight').addEventListener('input', () => { updateSqFt(); calculatePrice(); });
+        document.getElementById('seriesSelect').addEventListener('change', () => {
+            playRetroSound('click'); calculatePrice();
+        });
+        document.getElementById('glassSelect').addEventListener('change', () => {
+            playRetroSound('click'); calculatePrice();
+        });
+        document.getElementById('priceS900').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceS798').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceS38').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceAwning').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceClear').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceBronze').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceFrosted').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceTempered').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceColorWhite').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceColorBlack').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceColorBrown').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+        document.getElementById('priceColorWood').addEventListener('input', () => { savePriceSettings(); calculatePrice(); });
+
+        document.getElementById('discountInput').addEventListener('input', () => {
+            playRetroSound('click'); calculatePrice();
+        });
+
+        function updateSqFt() {
+            const w = parseFloat(document.getElementById('inputWidth').value) || 0;
+            const h = parseFloat(document.getElementById('inputHeight').value) || 0;
+
+            document.getElementById('widthInches').textContent = (w * 0.3937).toFixed(2) + ' in';
+            document.getElementById('heightInches').textContent = (h * 0.3937).toFixed(2) + ' in';
+
+            const sqm = (w * h) / 10000;
+            const sqft = sqm * 10.7639;
+            document.getElementById('detectedSquareFoot').value = sqft.toFixed(2) + ' sq ft';
+        }
+
+        function calculatePrice() {
+            const series = document.getElementById('seriesSelect').value;
+            const glassType = document.getElementById('glassSelect').value;
+            const aluminumColor = document.getElementById('aluminumColorSelect').value;
+        
+            const squareFoot = parseFloat(document.getElementById('detectedSquareFoot').value) || 0;
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+
+            const colorPrices = {
+                'default': 0,
+                'white': parseFloat(document.getElementById('priceColorWhite').value) || 0,
+                'black': parseFloat(document.getElementById('priceColorBlack').value) || 0,
+                'brown': parseFloat(document.getElementById('priceColorBrown').value) || 0,
+                'wood': parseFloat(document.getElementById('priceColorWood').value) || 0,
+            };
+
+            const seriesPrices = {
+                'series900': parseFloat(document.getElementById('priceS900').value) || 0,
+                'series798': parseFloat(document.getElementById('priceS798').value) || 0,
+                'series38': parseFloat(document.getElementById('priceS38').value) || 0,
+                'awning': parseFloat(document.getElementById('priceAwning').value) || 0
+            };
+            
+            const glassPrices = {
+                'clear': parseFloat(document.getElementById('priceClear').value) || 0,
+                'bronze': parseFloat(document.getElementById('priceBronze').value) || 0,
+                'frosted': parseFloat(document.getElementById('priceFrosted').value) || 0,
+                'tempered': parseFloat(document.getElementById('priceTempered').value) || 0
+            };
+
+            const pricePerSqFt = (seriesPrices[series] || 0) + (glassPrices[glassType] || 0) + (colorPrices[aluminumColor] || 0);
+
+            let totalPrice = 0;
+            let subtotal = 0;
+            if (squareFoot > 0 && pricePerSqFt > 0) { 
+                
+                subtotal = (squareFoot * pricePerSqFt) * 1.20; 
+                totalPrice = subtotal;
+                totalPrice = totalPrice * (1 - (discount / 100));
+            }
+
+            const totalPriceEl = document.getElementById('totalPrice');
+            totalPriceEl.innerHTML = `<span>Php ${totalPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
+            
+            totalPriceEl.classList.remove('glitch-active');
+            void totalPriceEl.offsetWidth; 
+            totalPriceEl.classList.add('glitch-active');
+            return { subtotal, totalPrice }; 
+        }
+
+        function savePriceSettings() {
+            localStorage.setItem('priceS900', document.getElementById('priceS900').value);
+            localStorage.setItem('priceS798', document.getElementById('priceS798').value);
+            localStorage.setItem('priceS38', document.getElementById('priceS38').value);
+            localStorage.setItem('priceAwning', document.getElementById('priceAwning').value);
+            localStorage.setItem('priceClear', document.getElementById('priceClear').value);
+            localStorage.setItem('priceBronze', document.getElementById('priceBronze').value);
+            localStorage.setItem('priceFrosted', document.getElementById('priceFrosted').value);
+            localStorage.setItem('priceTempered', document.getElementById('priceTempered').value);
+            localStorage.setItem('priceColorWhite', document.getElementById('priceColorWhite').value);
+            localStorage.setItem('priceColorBlack', document.getElementById('priceColorBlack').value);
+            localStorage.setItem('priceColorBrown', document.getElementById('priceColorBrown').value);
+            localStorage.setItem('priceColorWood', document.getElementById('priceColorWood').value);
+        }
+
+        function loadPriceSettings() {
+            const s900 = localStorage.getItem('priceS900');
+            const s798 = localStorage.getItem('priceS798');
+            const s38 = localStorage.getItem('priceS38');
+            const awning = localStorage.getItem('priceAwning');
+            const clear = localStorage.getItem('priceClear');
+            const bronze = localStorage.getItem('priceBronze');
+            const frosted = localStorage.getItem('priceFrosted');
+            const tempered = localStorage.getItem('priceTempered');
+            const colorWhite = localStorage.getItem('priceColorWhite');
+            const colorBlack = localStorage.getItem('priceColorBlack');
+            const colorBrown = localStorage.getItem('priceColorBrown');
+            const colorWood = localStorage.getItem('priceColorWood');
+
+            if (s900 !== null) document.getElementById('priceS900').value = s900;
+            if (s798 !== null) document.getElementById('priceS798').value = s798;
+            if (s38 !== null) document.getElementById('priceS38').value = s38;
+            if (awning !== null) document.getElementById('priceAwning').value = awning;
+            if (clear !== null) document.getElementById('priceClear').value = clear;
+            if (bronze !== null) document.getElementById('priceBronze').value = bronze;
+            if (frosted !== null) document.getElementById('priceFrosted').value = frosted;
+            if (tempered !== null) document.getElementById('priceTempered').value = tempered;
+            if (colorWhite !== null) document.getElementById('priceColorWhite').value = colorWhite;
+            if (colorBlack !== null) document.getElementById('priceColorBlack').value = colorBlack;
+            if (colorBrown !== null) document.getElementById('priceColorBrown').value = colorBrown;
+            if (colorWood !== null) document.getElementById('priceColorWood').value = colorWood;
+        }
+
+        clearAllBtn.addEventListener('click', () => {
+            playRetroSound('click');
+            const confirmClear = confirm("Sigurado ka bang gusto mong i-reset ang lahat ng inputs?");
+            if (!confirmClear) {
+                return; 
+            }
+
+            document.getElementById('inputWidth').value = "";
+            document.getElementById('inputHeight').value = "";
+            document.getElementById('widthInches').textContent = "0.00 in";
+            document.getElementById('heightInches').textContent = "0.00 in";
+            document.getElementById('detectedSquareFoot').value = "0.00 sq ft";
+
+            document.getElementById('seriesSelect').value = ""; 
+            document.getElementById('glassSelect').value = "clear"; 
+            document.getElementById('aluminumColorSelect').value = "default";
+            document.getElementById('discountInput').value = "0";
+
+            document.getElementById('priceS900').value = document.getElementById('priceS900').defaultValue;
+            document.getElementById('priceS798').value = document.getElementById('priceS798').defaultValue;
+            document.getElementById('priceS38').value = document.getElementById('priceS38').defaultValue;
+            document.getElementById('priceAwning').value = document.getElementById('priceAwning').defaultValue;
+            document.getElementById('priceClear').value = document.getElementById('priceClear').defaultValue;
+            document.getElementById('priceBronze').value = document.getElementById('priceBronze').defaultValue;
+            document.getElementById('priceFrosted').value = document.getElementById('priceFrosted').defaultValue;
+            document.getElementById('priceTempered').value = document.getElementById('priceTempered').defaultValue;
+            document.getElementById('priceColorWhite').value = document.getElementById('priceColorWhite').defaultValue;
+            document.getElementById('priceColorBlack').value = document.getElementById('priceColorBlack').defaultValue;
+            document.getElementById('priceColorBrown').value = document.getElementById('priceColorBrown').defaultValue;
+            document.getElementById('priceColorWood').value = document.getElementById('priceColorWood').defaultValue;
+            savePriceSettings(); 
+
+            document.getElementById('totalPrice').innerHTML = `<span>Php 0.00</span>`;
+
+            document.getElementById('detectedImage').innerHTML = '<p>Captured image will appear here</p>';
+
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                video.style.display = 'none';
+                captureBtn.style.display = 'none';
+                openCamBtn.style.display = 'block';
+            }
+
+            calculatePrice();
+        });
+
+        printReceiptBtn.addEventListener('click', () => {
+            playRetroSound('click');
+            
+            const width = document.getElementById('inputWidth').value || "0";
+            const height = document.getElementById('inputHeight').value || "0";
+            const seriesSelect = document.getElementById('seriesSelect');
+            const glassSelect = document.getElementById('glassSelect');
+            const aluminumColorSelect = document.getElementById('aluminumColorSelect');
+            const discount = document.getElementById('discountInput').value || "0";
+            
+            const { subtotal, totalPrice } = calculatePrice(); 
+
+            document.getElementById('rcpt-date').textContent = new Date().toLocaleDateString();
+            document.getElementById('rcpt-width').textContent = width + " CM";
+            document.getElementById('rcpt-height').textContent = height + " CM";
+            document.getElementById('rcpt-series').textContent = seriesSelect.options[seriesSelect.selectedIndex].text;
+            document.getElementById('rcpt-glass').textContent = glassSelect.options[glassSelect.selectedIndex].text;
+            document.getElementById('rcpt-color').textContent = aluminumColorSelect.options[aluminumColorSelect.selectedIndex].text;
+            
+            document.getElementById('rcpt-subtotal').textContent = `PHP ${subtotal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('rcpt-discount-percent').textContent = discount + "%";
+            document.getElementById('rcpt-discount-amount').textContent = `PHP ${(subtotal - totalPrice).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('rcpt-total').textContent = `PHP ${totalPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            window.print();
+        });
+
+        video.style.display = 'none';
+
+        loadPriceSettings();
+        calculatePrice();
+    </script>
+</body>
+</html>
